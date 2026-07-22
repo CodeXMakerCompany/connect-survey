@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test de la Oficina</title>
+<style>
+  :root{
+    --paper:#f2e9d8;
+    --paper-dark:#e8dcc3;
+    --ink:#2b2a28;
+    --green:#0b6e4f;
+    --green-dark:#084d38;
+    --red:#b23a2f;
+    --mustard:#d9a441;
+    --gray:#7a756a;
+    --card-shadow: 0 6px 0 rgba(0,0,0,0.15);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: 'Courier New', Courier, monospace;
+    background: repeating-linear-gradient(45deg, var(--paper), var(--paper) 10px, var(--paper-dark) 10px, var(--paper-dark) 20px);
+    color: var(--ink);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 24px;
+  }
+  .sheet{
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    border-radius: 6px;
+    max-width: 620px;
+    width:100%;
+    padding: 28px 26px;
+    box-shadow: var(--card-shadow);
+    position:relative;
+  }
+  .sheet::before{
+    content:"CONFIDENCIAL — RECURSOS NO HUMANOS";
+    position:absolute;
+    top:10px;
+    right:14px;
+    font-size:10px;
+    color: var(--gray);
+    letter-spacing:1px;
+  }
+  h1{
+    font-size: 26px;
+    margin: 6px 0 2px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 3px dashed var(--ink);
+    padding-bottom: 10px;
+  }
+  .subtitle{
+    font-size: 13px;
+    color: var(--gray);
+    margin-bottom: 18px;
+  }
+  .stamp{
+    display:inline-block;
+    border:2px solid var(--red);
+    color:var(--red);
+    padding:2px 8px;
+    font-weight:bold;
+    transform: rotate(-4deg);
+    font-size:12px;
+    margin-bottom:10px;
+  }
+  .progress{
+    display:flex;
+    gap:6px;
+    margin: 14px 0 22px;
+  }
+  .dot{
+    flex:1;
+    height:8px;
+    background: var(--paper-dark);
+    border:1px solid var(--ink);
+    border-radius:2px;
+  }
+  .dot.filled{ background: var(--green); }
+
+  .question{
+    font-size:17px;
+    font-weight:bold;
+    margin-bottom:16px;
+    line-height:1.4;
+  }
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .opt{
+    text-align:left;
+    background:#fff;
+    border:2px solid var(--ink);
+    border-radius:4px;
+    padding:12px 14px;
+    font-family:inherit;
+    font-size:14px;
+    cursor:pointer;
+    transition: transform .08s ease, background .15s ease;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.18);
+  }
+  .opt:hover{ background: var(--mustard); }
+  .opt:active{ transform: translate(2px,2px); box-shadow:none; }
+
+  .toast{
+    margin-top:14px;
+    font-size:12px;
+    color: var(--green-dark);
+    font-style:italic;
+    min-height:16px;
+  }
+
+  .start-btn, .again-btn{
+    background: var(--green);
+    color:#fff;
+    border:2px solid var(--green-dark);
+    border-radius:4px;
+    padding:14px 20px;
+    font-family:inherit;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+    width:100%;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.25);
+  }
+  .start-btn:hover, .again-btn:hover{ background: var(--green-dark); }
+  .start-btn:active, .again-btn:active{ transform: translate(2px,2px); box-shadow:none; }
+
+  .intro-text{
+    font-size:14px;
+    line-height:1.6;
+    margin-bottom:20px;
+  }
+
+  .results{ display:none; }
+  .result-card{
+    border:2px solid var(--ink);
+    border-radius:5px;
+    padding:14px 16px;
+    margin-bottom:14px;
+    background:#fff;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.15);
+  }
+  .result-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color: var(--gray);
+    margin-bottom:4px;
+  }
+  .result-name{
+    font-size:20px;
+    font-weight:bold;
+    color: var(--green-dark);
+    margin-bottom:6px;
+  }
+  .result-reason{
+    font-size:13px;
+    color: var(--ink);
+    font-style: italic;
+  }
+  .badge-boss .result-name{ color: var(--green-dark); }
+  .badge-hate .result-name{ color: var(--red); }
+  .badge-job .result-name{ color: #7a4a12; }
+  .badge-snitch .result-name{ color: var(--mustard); }
+
+  .footer-note{
+    font-size:11px;
+    color: var(--gray);
+    text-align:center;
+    margin-top:16px;
+  }
+
+  .hidden{ display:none !important; }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="stamp">EVALUACIÓN NO OFICIAL</div>
+  <h1>Test de la Oficina</h1>
+  <div class="subtitle">Un examen de recursos no humanos que nadie autorizó</div>
+
+  <!-- INTRO -->
+  <div id="intro">
+    <p class="intro-text">
+      Vas a responder algunas preguntas de opción múltiple. Ninguna tiene que ver con nada.
+      Ninguna de tus respuestas afecta el resultado. Aun así, contesta con convicción,
+      como si de verdad importara.
+    </p>
+    <button class="start-btn" onclick="startQuiz()">Comenzar evaluación</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz" class="hidden">
+    <div class="progress" id="progress"></div>
+    <div class="question" id="questionText"></div>
+    <div class="options" id="optionsBox"></div>
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results" class="results">
+    <p class="intro-text" style="margin-bottom:10px;">Evaluación completada. Aquí están tus resultados, generados con criterio absolutamente arbitrario:</p>
+
+    <div class="result-card badge-boss">
+      <div class="result-label">01 · Quién debería ser tu jefe real</div>
+      <div class="result-name" id="resBoss"></div>
+      <div class="result-reason" id="reasonBoss"></div>
+    </div>
+
+    <div class="result-card badge-hate">
+      <div class="result-label">02 · Quién se va a enfermar del estómago mañana</div>
+      <div class="result-name" id="resHate"></div>
+      <div class="result-reason" id="reasonHate"></div>
+    </div>
+
+    <div class="result-card badge-job">
+      <div class="result-label">03 · Quién te va a quitar tu trabajo</div>
+      <div class="result-name" id="resJob"></div>
+      <div class="result-reason" id="reasonJob"></div>
+    </div>
+
+    <div class="result-card badge-snitch">
+      <div class="result-label">04 · Quién te va a delatar con el jefe</div>
+      <div class="result-name" id="resSnitch"></div>
+      <div class="result-reason" id="reasonSnitch"></div>
+    </div>
+
+    <button class="again-btn" onclick="location.reload()">Volver a evaluarme</button>
+    <div class="footer-note">Resultados no vinculantes. Cualquier parecido con la realidad de tu oficina es pura coincidencia (o no).</div>
+  </div>
+
+</div>
+
+<script>
+const NAMES = ["Diego","Victor Hugo","Sam","Fer","Pame","Pepe","Joss","Portilla","Ceci","Ana K","Anastasia","Andy"];
+
+const QUESTIONS = [
+  {
+    q: "¿Café hoy?",
+    opts: ["Doble shot", "Agua tibia", "Van 4 ya", "¿Qué es café?"]
+  },
+  {
+    q: "¿Has comido moho hoy?",
+    opts: ["Sí, con gusto", "No que yo sepa", "Tal vez sin darme cuenta", "Todos los días"]
+  },
+  {
+    q: "Junta que era un correo. Tú:",
+    opts: ["Cámara apagada", "Finjo apuntar", "Como en silencio", "Salgo 'por wifi'"]
+  },
+  {
+    q: "¿Quién es el siguiente embajador de RH?",
+    opts: ["Diego", "Diego Orozco Villegas", "Diego Orozco", "Diego Villegas"]
+  },
+  {
+    q: "Se acabó el papel del baño. Culpo a:",
+    opts: ["El vecino", "Andy", "Nadie, misterio", "Yo, por si acaso"]
+  },
+  {
+    q: "¿Qué harías con el espacio libre de Connect?",
+    opts: ["Sala de juegos", "Boliche", "Spa", "Alberca"]
+  },
+  {
+    q: "¿Quién sería la mejor mascota de Connect?",
+    opts: ["Un ajolote", "El pato Merlin", "Una cabra", "Un ornitorinco"]
+  },
+  {
+    q: "¿Piña en la pizza?",
+    opts: ["Sí, sin duda", "Jamás", "Depende", "Solo si nadie ve"]
+  },
+  {
+    q: "Momento surreal fav:",
+    opts: ["Cae polvo del techo después de un speech motivacional", "Andy te regaña por romper tu propia taza", "Que por fin tengamos Sede Café pero surten pan de moho", "Las risas de Ana"]
+  },
+  {
+    q: "¿Cuál es el mejor uso de la laptop de trabajo?",
+    opts: ["Charola para las cubas", "Para defenderte en el metro", "Abanico en juntas largas", "Nivelar una mesa coja"]
+  }
+];
+
+const REASONS = {
+  boss: [
+    "porque una vez organizó el excel más caótico y aun así funcionó.",
+    "porque nadie ha visto jamás su bandeja de entrada, y eso da autoridad.",
+    "porque contesta 'perfecto' a todo, incluso a lo que no lo es.",
+    "porque tiene la energía de alguien que sabe algo que tú no sabes.",
+    "porque su firma de correo tiene más cargos que un currículum entero.",
+    "porque cuando habla en juntas, todos dejan de escribir en el chat."
+  ],
+  hate: [
+    "por el pan de moho de Sede Café.",
+    "por confiar en el 'especial del día' de Sede Café.",
+    "por el café de Sede Café, que ya no es café, es leyenda.",
+    "por el sándwich sospechoso de Sede Café.",
+    "porque Sede Café nunca falla en fallar.",
+    "por comer ahí aunque todos le dijeron que no."
+  ],
+  job: [
+    "porque nunca pide vacaciones.",
+    "porque no necesita café para rendir.",
+    "porque contesta a las 3am sin quejarse.",
+    "porque no pide aumento, solo más GPUs.",
+    "porque ya se aprendió tu trabajo leyendo tu correo.",
+    "porque jamás dice 'eso no me toca'."
+  ],
+  snitch: [
+    "porque necesita puntos con RH.",
+    "porque tiene la lealtad de una fotocopiadora.",
+    "porque ya le urge ese ascenso.",
+    "porque no aguanta un secreto ni cinco minutos.",
+    "porque el chisme es su lenguaje del amor.",
+    "porque siempre 'solo estaba comentando'."
+  ]
+};
+
+const TOASTS = [
+  "Interesante elección.",
+  "Eso quedará registrado, para bien o para mal.",
+  "No tiene nada que ver, pero anotado.",
+  "RRHH está tomando nota de esto.",
+  "Válido. Cuestionable, pero válido.",
+  "Ajá. Sigamos."
+];
+
+let current = 0;
+
+function startQuiz(){
+  document.getElementById('intro').classList.add('hidden');
+  document.getElementById('quiz').classList.remove('hidden');
+  renderProgress();
+  renderQuestion();
+}
+
+function renderProgress(){
+  const box = document.getElementById('progress');
+  box.innerHTML = '';
+  QUESTIONS.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i < current ? ' filled' : '');
+    box.appendChild(d);
+  });
+}
+
+function renderQuestion(){
+  const item = QUESTIONS[current];
+  document.getElementById('questionText').textContent = `Pregunta ${current+1} de ${QUESTIONS.length}: ${item.q}`;
+  const box = document.getElementById('optionsBox');
+  box.innerHTML = '';
+  document.getElementById('toast').textContent = '';
+  item.opts.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => answer();
+    box.appendChild(btn);
+  });
+}
+
+function answer(){
+  document.getElementById('toast').textContent = TOASTS[Math.floor(Math.random()*TOASTS.length)];
+  setTimeout(() => {
+    current++;
+    if(current >= QUESTIONS.length){
+      showResults();
+    } else {
+      renderProgress();
+      renderQuestion();
+    }
+  }, 350);
+}
+
+function pickDistinct(n, excluding){
+  const exclude = excluding || [];
+  const pool = NAMES.filter(name => !exclude.includes(name));
+  const picks = [];
+  for(let i=0;i<n;i++){
+    const idx = Math.floor(Math.random()*pool.length);
+    picks.push(pool[idx]);
+    pool.splice(idx,1);
+  }
+  return picks;
+}
+
+function randomFrom(arr){
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+
+function showResults(){
+  document.getElementById('quiz').classList.add('hidden');
+  document.getElementById('results').style.display = 'block';
+
+  const [boss, snitch] = pickDistinct(2, ["Sam"]);
+
+  document.getElementById('resBoss').textContent = boss;
+  document.getElementById('reasonBoss').textContent = randomFrom(REASONS.boss).replace(/^./, c => c.toUpperCase());
+
+  document.getElementById('resHate').textContent = "Sam";
+  document.getElementById('reasonHate').textContent = randomFrom(REASONS.hate).replace(/^./, c => c.toUpperCase());
+
+  document.getElementById('resJob').textContent = "Claude";
+  document.getElementById('reasonJob').textContent = randomFrom(REASONS.job).replace(/^./, c => c.toUpperCase());
+
+  document.getElementById('resSnitch').textContent = snitch;
+  document.getElementById('reasonSnitch').textContent = randomFrom(REASONS.snitch).replace(/^./, c => c.toUpperCase());
+}
+</script>
+
+</body>
+</html>
